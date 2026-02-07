@@ -1,0 +1,74 @@
+.clients-section {
+  padding: 40px 0 60px;
+  background-color: #FDFBF7; /* Mesma cor do fundo do site */
+  overflow: hidden;
+  text-align: center;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.clients-title {
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  color: #8C9990; /* Cinza esverdeado suave */
+  font-weight: 700;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+}
+
+.logos-slider {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  white-space: nowrap;
+  /* Degradê nas pontas para suavizar a entrada/saída */
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+.logos-slide {
+  display: inline-flex;
+  animation: slide 30s linear infinite; /* Velocidade da animação */
+}
+
+.client-logo {
+  margin: 0 40px; /* Espaço entre os logos */
+  flex-shrink: 0;
+  opacity: 0.6;
+  filter: grayscale(100%); /* Deixa preto e branco */
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.client-logo img {
+  height: 50px; /* Altura padrão dos logos */
+  width: auto;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* Ao passar o mouse, fica colorido e focado */
+.client-logo:hover {
+  opacity: 1;
+  filter: grayscale(0%);
+  transform: scale(1.05);
+}
+
+/* A ANIMAÇÃO */
+@keyframes slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%); /* Move metade (já que duplicamos a lista) */
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .client-logo img {
+    height: 40px;
+  }
+  .client-logo {
+    margin: 0 20px;
+  }
+}

@@ -1,0 +1,34 @@
+/* =========================================
+   RESET GERAL (INDEX.CSS)
+   ========================================= */
+
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* Força o modo claro (Light Mode) para garantir que as cores do site fiquem certas */
+  color-scheme: light; 
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* AQUI ESTAVA O PROBLEMA - AGORA CORRIGIDO */
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  display: block; /* Mudamos de 'flex' para 'block' para ocupar a tela toda */
+  background-color: #F9FAF9; /* Cor de fundo padrão (Gelo) */
+}
+
+/* Garante que o React ocupe tudo */
+#root {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  text-align: left; /* Garante que o texto não fique centralizado à força */
+}

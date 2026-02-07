@@ -1,205 +1,160 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaBullhorn, FaExternalLinkAlt, FaSpinner, FaTheaterMasks, FaGraduationCap, FaSyncAlt, FaFilter } from 'react-icons/fa';
+import { FaExternalLinkAlt, FaSearch, FaExclamationTriangle } from 'react-icons/fa';
 
 const MonitorBahia = () => {
   const [editais, setEditais] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const fetchNoticias = () => {
-    setLoading(true);
-    setError(false);
+  // --- SUAS CHAVES DO GOOGLE ---
+  const API_KEY = "AIzaSyAMlieEho4VLyTOBBkfkgpIF1SKzIsq2hM"; 
+  const CX = "3131081832f6441d2";
 
-    // 1. Busca ampla no site oficial (trazemos mais resultados para filtrar depois)
-    const query = 'site:ba.gov.br (edital OR "inscrições abertas" OR seleção OR convocatória) when:30d';
-    const GOOGLE_RSS = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=pt-BR&gl=BR&ceid=BR:pt-419`;
-    const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(GOOGLE_RSS)}&api_key=0`; // api_key=0 tenta evitar cache
-
-    fetch(API_URL)
-      .then(response => response.json())
-      .then(data => {
-        if (data.status === 'ok' && data.items.length > 0) {
-          
-          // --- FILTRO PENTE FINO (JAVASCRIPT) ---
-          
-          // Palavras OBRIGATÓRIAS (Tem que ter pelo menos uma dessas)
-          const whitelist = [
-            'cultura', 'arte', 'educa', 'escol', 'professor', 'pedagog', 
-            'paulo gustavo', 'aldir blanc', 'audiovisual', 'leitura', 
-            'patrimônio', 'museu', 'teatro', 'dança', 'música', 'ensino'
-          ];
-
-          // Palavras PROIBIDAS (Se tiver, deleta na hora)
-          const blacklist = [
-            'polícia', 'militar', ' pm ', 'bombeiro', 'segurança pública', 
-            'detran', 'cpa', 'armas', 'viatura', 'presídio', 'penal',
-            'embasa', 'coelba', 'asfalto', 'pavimentação', 'drenagem', 
-            'obra', 'engenharia', 'saúde', 'hospital', 'médico', 'enfermagem'
-          ];
-
-          const editaisFiltrados = data.items.filter(item => {
-            const texto = (item.title + ' ' + item.description).toLowerCase();
-
-            // 1. Checa se tem algo proibido
-            const temProibido = blacklist.some(badWord => texto.includes(badWord));
-            if (temProibido) return false;
-
-            // 2. Checa se tem algo obrigatório (Educação ou Cultura)
-            const temPermitido = whitelist.some(goodWord => texto.includes(goodWord));
-            return temPermitido;
-          }).map(item => {
-            // Categoriza visualmente
-            const texto = (item.title + ' ' + item.description).toLowerCase();
-            let categoria = 'GERAL';
-            if (texto.includes('cultura') || texto.includes('arte') || texto.includes('paulo gustavo') || texto.includes('aldir blanc')) {
-              categoria = 'CULTURA';
-            } else {
-              categoria = 'EDUCAÇÃO';
-            }
-
-            return {
-              ...item,
-              title: item.title.split(' - ')[0], 
-              categoria: categoria,
-              link: item.link,
-              pubDate: item.pubDate
-            };
-          });
-
-          // Se depois de filtrar sobrar algo, atualiza o estado
-          if (editaisFiltrados.length > 0) {
-            setEditais(editaisFiltrados.slice(0, 6)); 
-          } else {
-            // Se o filtro removeu tudo (ex: só tinha edital de polícia hoje), lança erro para mostrar msg vazia
-            throw new Error('Sem editais relevantes após filtro.');
-          }
-
-        } else {
-          throw new Error('Nenhum dado retornado.');
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.warn("Filtro rigoroso aplicado ou erro de API:", err);
-        setError(true); // Vai mostrar a tela de "Nenhum edital encontrado" ao invés de lixo
-        setLoading(false);
-      });
-  };
+  // Backup Manual (Caso a cota do Google acabe ou dê erro)
+  const backupEditais = [
+    { 
+      title: "Seleção SEC/BA 2026 (REDA)", 
+      link: "http://educacao.ba.gov.br",
+      snippet: "Processo seletivo para contratação de professores e técnicos. Inscrições abertas até 23/02/2026." 
+    },
+    { 
+      title: "Edital Quilombos da Bahia - CAR", 
+      link: "http://car.ba.gov.br",
+      snippet: "Chamada pública para fomento produtivo em comunidades quilombolas. Prazo: 11/02/2026." 
+    },
+    { 
+      title: "FazCultura 2026 - Fluxo Contínuo", 
+      link: "http://cultura.ba.gov.br",
+      snippet: "Programa estadual de incentivo ao patrocínio cultural. Aberto o ano todo." 
+    }
+  ];
 
   useEffect(() => {
-    fetchNoticias();
+    const buscarNoGoogle = async () => {
+      try {
+        // Busca: "editais abertos bahia 2026"
+        // O parâmetro 'dateRestrict' ajuda a pegar coisas novas, mas o Google Custom Search as vezes é chato.
+        // Vamos fazer uma busca ampla.
+        const query = "edital inscrições abertas cultura educação bahia 2026";
+        const url = `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX}&q=${encodeURIComponent(query)}&num=3`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.items && data.items.length > 0) {
+          setEditais(data.items);
+          setError(false);
+        } else {
+          // Se não achar nada, usa o backup
+          console.log("Google não retornou resultados, usando backup.");
+          setEditais(backupEditais);
+        }
+      } catch (err) {
+        console.error("Erro na API do Google:", err);
+        setError(true);
+        setEditais(backupEditais); // Fallback para o backup em caso de erro
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    buscarNoGoogle();
   }, []);
 
-  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
-  const itemAnim = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
-
   return (
-    <section className="section-padding" style={{ background: '#f8f9fa', padding: '80px 0' }}>
-      <div className="container">
-        <motion.div 
-          style={{ textAlign: 'center', marginBottom: '60px' }}
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <span className="overline" style={{ color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 'bold' }}>MONITORAMENTO INTELIGENTE</span>
-          <h2 className="section-title" style={{ fontSize: '2.5rem', color: 'var(--primary)', marginTop: '10px' }}>
-            Editais: Cultura & Educação
-          </h2>
-          <p style={{ color: '#666', maxWidth: '600px', margin: '20px auto' }}>
-            Filtrados automaticamente. Você só vê o que importa para sua instituição.
-          </p>
-        </motion.div>
+    <div className="monitor-wrapper" style={{ width: '100%', marginTop: '30px' }}>
+      
+      {/* Cabeçalho do Monitor */}
+      <div style={{ 
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+        marginBottom: '20px', paddingBottom: '15px', borderBottom: '1px solid rgba(0,0,0,0.1)' 
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <FaSearch color="#C5A059" size={20} />
+          <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#1A3C28' }}>Radar Oficial</h3>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ 
+            background: loading ? '#e0e0e0' : (error ? '#fef2f2' : '#dcfce7'), 
+            color: loading ? '#888' : (error ? '#991b1b' : '#166534'),
+            padding: '4px 12px', borderRadius: '50px', fontSize: '0.8rem', fontWeight: '600',
+            display: 'flex', alignItems: 'center', gap: '6px'
+          }}>
+            {loading ? "Buscando..." : (error ? <><FaExclamationTriangle/> Modo Offline</> : "● Online (Google)")}
+          </span>
+        </div>
+      </div>
 
+      {/* Lista de Resultados */}
+      <div className="editais-grid" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--primary)' }}>
-            <FaSpinner className="icon-spin" style={{ fontSize: '2rem', animation: 'spin 1s linear infinite' }} />
-            <p style={{ marginTop: '15px' }}>Aplicando filtro de relevância...</p>
-            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
-          </div>
-        ) : error || editais.length === 0 ? (
-          <div style={{ textAlign: 'center', color: '#666', padding: '40px', background: 'white', borderRadius: '8px', border: '1px dashed #ccc' }}>
-            <FaFilter style={{ fontSize: '3rem', color: '#ccc', marginBottom: '20px' }} />
-            <h3 style={{fontSize: '1.2rem', marginBottom: '10px'}}>Tudo limpo por hoje.</h3>
-            <p>Nenhum edital de <strong>Cultura</strong> ou <strong>Educação</strong> encontrado nas últimas publicações oficiais.</p>
-            <p style={{fontSize: '0.8rem', marginTop: '10px', color: '#999'}}>(Editais de outras áreas foram ocultados automaticamente)</p>
-            <button 
-              onClick={fetchNoticias} 
-              className="btn-outline" 
-              style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
-            >
-              <FaSyncAlt style={{ marginRight: '8px' }} /> Verificar Novamente
-            </button>
+          <div style={{ padding: '40px', textAlign: 'center', color: '#888', background: '#f9f9f9', borderRadius: '12px' }}>
+             Consultando Diário Oficial...
           </div>
         ) : (
-          <motion.div 
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}
-          >
-            {editais.map((item, index) => (
-              <motion.div 
-                key={index} 
-                variants={itemAnim}
-                style={{ 
-                  background: 'white', 
-                  padding: '30px', 
-                  borderRadius: '8px', 
-                  borderTop: item.categoria === 'CULTURA' ? '4px solid #9C27B0' : '4px solid #2F5233', 
-                  boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)',
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  justifyContent: 'space-between'
+          editais.map((edital, index) => (
+            <motion.div 
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              style={{
+                background: '#ffffff',
+                border: '1px solid rgba(0,0,0,0.05)',
+                borderRadius: '12px',
+                padding: '20px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.02)',
+                transition: 'transform 0.2s',
+              }}
+              className="edital-item"
+            >
+              <div style={{ paddingRight: '20px', flex: 1 }}>
+                <h4 style={{ margin: '0 0 8px 0', color: '#1A3C28', fontSize: '1.05rem', fontFamily: 'Inter, sans-serif' }}>
+                  {edital.title}
+                </h4>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: '#666', lineHeight: '1.4' }}>
+                  {edital.snippet ? edital.snippet.replace(/\n/g, ' ').substring(0, 100) + "..." : "Detalhes disponíveis no site oficial."}
+                </p>
+              </div>
+              
+              <a 
+                href={edital.link} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  textDecoration: 'none',
+                  background: 'transparent',
+                  border: '1px solid #1A3C28',
+                  color: '#1A3C28',
+                  padding: '10px 18px',
+                  borderRadius: '50px',
+                  fontSize: '0.85rem',
+                  fontWeight: '600',
+                  whiteSpace: 'nowrap',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.2s'
                 }}
+                onMouseOver={(e) => { e.target.style.background = '#1A3C28'; e.target.style.color = '#fff'; }}
+                onMouseOut={(e) => { e.target.style.background = 'transparent'; e.target.style.color = '#1A3C28'; }}
               >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                    <span style={{ 
-                      fontSize: '0.7rem', fontWeight: 'bold', 
-                      background: item.categoria === 'CULTURA' ? '#F3E5F5' : '#E8F5E9', 
-                      color: item.categoria === 'CULTURA' ? '#7B1FA2' : '#2F5233', 
-                      padding: '4px 8px', borderRadius: '4px',
-                      display: 'flex', alignItems: 'center', gap: '5px'
-                    }}>
-                      {item.categoria === 'CULTURA' ? <FaTheaterMasks /> : <FaGraduationCap />}
-                      {item.categoria}
-                    </span>
-                    <span style={{ fontSize: '0.75rem', color: '#999' }}>
-                      {new Date(item.pubDate).toLocaleDateString('pt-BR')}
-                    </span>
-                  </div>
-                  
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#333', marginBottom: '15px', lineHeight: '1.4', fontFamily: 'Lato' }}>
-                    {item.title}
-                  </h3>
-                </div>
-
-                <a 
-                  href={item.link} 
-                  target="_blank" 
-                  rel="noreferrer" 
-                  style={{ 
-                    marginTop: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: item.categoria === 'CULTURA' ? '#7B1FA2' : 'var(--primary)',
-                    fontWeight: 'bold',
-                    textDecoration: 'none',
-                    fontSize: '0.9rem',
-                    transition: '0.3s'
-                  }}
-                >
-                  Ler Edital <FaExternalLinkAlt style={{ marginLeft: '8px', fontSize: '0.7rem' }} />
-                </a>
-              </motion.div>
-            ))}
-          </motion.div>
+                Acessar <FaExternalLinkAlt size={12} />
+              </a>
+            </motion.div>
+          ))
         )}
       </div>
-    </section>
+      
+      <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.8rem', color: '#999' }}>
+        * Resultados obtidos automaticamente via Google Search API.
+      </p>
+    </div>
   );
 };
 

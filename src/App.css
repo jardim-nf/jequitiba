@@ -1,11 +1,11 @@
 /* =========================================
    1. IMPORTAÇÃO DE FONTES & VARIÁVEIS
    ========================================= */
-/* Importando fontes de verdade para ficar bonito */
+/* Importando fontes elegantes: Playfair (Títulos) e Inter (Texto) */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
 
 :root {
-  /* Paleta Verde Jequitibá & Dourado (Mantida e Refinada) */
+  /* Paleta Verde Jequitibá & Dourado (Refinada) */
   --primary: #1A3C28;       /* Verde Floresta Profundo */
   --primary-light: #2F5233; /* Verde Folha */
   --primary-dark: #0f2619;  /* Verde Quase Preto */
@@ -23,10 +23,10 @@
   
   --success: #27ae60;       /* Verde Sucesso */
   
-  /* Sombras Modernas (Substituindo as antigas por versões mais suaves) */
+  /* Sombras Modernas (Suaves e Difusas) */
   --shadow: 0 15px 40px rgba(26, 60, 40, 0.12);
   --shadow-soft: 0 5px 20px rgba(26, 60, 40, 0.05);
-  --border-radius: 12px;
+  --border-radius: 16px;
   --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
@@ -39,7 +39,7 @@ html, body {
   padding: 0;
   overflow-x: hidden; /* Impede rolagem lateral */
   background-color: var(--light-bg);
-  font-family: 'Inter', sans-serif; /* Fonte moderna */
+  font-family: 'Inter', sans-serif;
   color: var(--text);
   line-height: 1.6;
 }
@@ -72,7 +72,7 @@ img {
   transition: width 0.1s ease;
 }
 
-/* Container Responsivo (Ajustado) */
+/* Container Responsivo (Centralizado mas largo) */
 .container {
   width: 100%;
   max-width: 1200px;
@@ -172,7 +172,7 @@ img {
   top: 0; left: 0; right: 0;
   width: 100%;
   background: rgba(255, 255, 255, 0.9); /* Translúcido */
-  backdrop-filter: blur(10px); /* Desfoque */
+  backdrop-filter: blur(10px); /* Desfoque estilo iPhone */
   -webkit-backdrop-filter: blur(10px);
   box-shadow: var(--shadow-soft);
   z-index: 1000;
@@ -329,7 +329,7 @@ img {
    ========================================= */
 .testimonials-section { background: var(--light-gray); }
 .testimonials-container { max-width: 800px; margin: 0 auto; }
-.testimonials-wrapper { position: relative; height: 320px; }
+.testimonials-wrapper { position: relative; height: 320px; /* Altura fixa para não pular */ }
 .testimonial-card {
   position: absolute; top: 0; left: 0; right: 0;
   background: var(--white); padding: 40px; border-radius: 20px;

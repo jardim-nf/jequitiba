@@ -11,6 +11,7 @@ import {
 
 // Componentes
 import ChatWidget from './components/ChatWidget';
+import MonitorBahia from './components/MonitorBahia'; // <--- O NOVO COMPONENTE AQUI
 
 import './App.css';
 
@@ -46,7 +47,7 @@ function App() {
     {
       name: "Ana Paula Santos",
       role: "Produtora Cultural",
-      content: "Captamos R$ 180.000 através da Lei Paulo Gustavo com a assessoria deles. Profissionais excepcionais!",
+      content: "Captamos recursos através da Lei Aldir Blanc com a assessoria deles. Profissionais excepcionais!",
       rating: 5
     },
     {
@@ -97,9 +98,9 @@ function App() {
     e.preventDefault();
     setLoading(true);
 
-    const SERVICE_ID = "service_xxxxxxx";
-    const TEMPLATE_ID = "template_xxxxxxx";
-    const PUBLIC_KEY = "pRDn8kbtXodJTNz33";
+    const SERVICE_ID = "service_xxxxxxx"; // Coloque seu ID real aqui
+    const TEMPLATE_ID = "template_xxxxxxx"; // Coloque seu Template ID aqui
+    const PUBLIC_KEY = "pRDn8kbtXodJTNz33"; // Sua chave pública
 
     emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, formRef.current, PUBLIC_KEY)
       .then((result) => {
@@ -226,7 +227,7 @@ function App() {
               Transformamos <span className="gradient-text">burocracia</span> em projetos aprovados.
             </h1>
             <p className="hero-subtitle">
-              Da regularização escolar à captação de recursos na Lei Paulo Gustavo. Conectamos sua instituição às oportunidades do Estado.
+              Da regularização escolar à captação de recursos na Lei Aldir Blanc (PNAB). Conectamos sua instituição às oportunidades do Estado.
             </p>
             <div className="hero-buttons">
               <button className="btn btn-gradient btn-hero" onClick={() => scrollTo('monitor')}>
@@ -320,12 +321,12 @@ function App() {
             <ServiceCard
               icon={FaChartLine}
               title="Projetos Culturais"
-              description="Escrita e prestação de contas para Lei Paulo Gustavo, Aldir Blanc, FazCultura e editais da Secult/BA."
+              description="Escrita e prestação de contas para Lei Aldir Blanc (PNAB), FazCultura e editais da Secult/BA."
               features={[
-                "Lei Paulo Gustavo",
-                "Aldir Blanc 2.0",
+                "PNAB (Aldir Blanc)",
                 "FazCultura Bahia",
-                "Editais SECULT"
+                "Editais SECULT",
+                "Prestação de Contas"
               ]}
             />
             
@@ -344,7 +345,7 @@ function App() {
         </div>
       </section>
 
-      {/* --- MONITOR BAHIA --- */}
+      {/* --- MONITOR BAHIA (AGORA REAL COM GOOGLE) --- */}
       <section id="monitor" className="monitor-section section-padding">
         <div className="container">
           <motion.div 
@@ -357,73 +358,18 @@ function App() {
             <span className="overline">Oportunidades</span>
             <h2 className="section-title">Editais Abertos na Bahia</h2>
             <p className="section-subtitle">
-              Acompanhe as oportunidades de financiamento e fomento para projetos educacionais e culturais
+              Nossa tecnologia monitora os diários oficiais para você não perder prazos importantes.
             </p>
           </motion.div>
 
-          <div className="monitor-container">
-            <div className="monitor-header">
-              <h3>Próximos Editais</h3>
-              <span className="status-badge status-open">Inscrições Abertas</span>
-            </div>
-            
-            <div className="editais-list">
-              {[
-                { 
-                  nome: "Lei Paulo Gustavo - Edital 2024", 
-                  org: "Ministério da Cultura", 
-                  prazo: "15/12/2024", 
-                  valor: "Até R$ 200.000" 
-                },
-                { 
-                  nome: "FazCultura Bahia", 
-                  org: "SECULT-BA", 
-                  prazo: "30/11/2024", 
-                  valor: "Até R$ 150.000" 
-                },
-                { 
-                  nome: "Edital de Fomento às Escolas", 
-                  org: "Secretaria de Educação", 
-                  prazo: "20/12/2024", 
-                  valor: "Até R$ 100.000" 
-                }
-              ].map((edital, index) => (
-                <motion.div 
-                  key={index}
-                  className="edital-card"
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <div className="edital-info">
-                    <h4>{edital.nome}</h4>
-                    <p className="edital-org">{edital.org}</p>
-                    <div className="edital-details">
-                      <span className="detail-item">
-                        <strong>Prazo:</strong> {edital.prazo}
-                      </span>
-                      <span className="detail-item">
-                        <strong>Valor:</strong> {edital.valor}
-                      </span>
-                    </div>
-                  </div>
-                  <button 
-                    className="btn btn-outline"
-                    onClick={() => scrollTo('contato')}
-                  >
-                    Tenho interesse
-                  </button>
-                </motion.div>
-              ))}
-            </div>
+          {/* COMPONENTE CONECTADO AO GOOGLE SEARCH */}
+          <MonitorBahia />
 
-            <div className="monitor-cta">
-              <p>Não perca prazos importantes. Receba alertas personalizados.</p>
-              <button className="btn btn-gradient" onClick={() => scrollTo('contato')}>
-                Quero ser avisado sobre editais
-              </button>
-            </div>
+          <div className="monitor-cta" style={{ marginTop: '40px' }}>
+            <p>Precisa de ajuda para escrever seu projeto nesses editais?</p>
+            <button className="btn btn-gradient" onClick={() => scrollTo('contato')}>
+              Falar com um Especialista
+            </button>
           </div>
         </div>
       </section>
@@ -670,6 +616,65 @@ function App() {
                 <p>Sábado: 8h às 12h (plantão)</p>
               </div>
             </motion.div>
+
+            {/* Formulário */}
+            <motion.form 
+              ref={formRef}
+              onSubmit={sendEmail}
+              className="contact-form"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <h4>Solicitar Proposta</h4>
+              
+              <ModernInput type="text" name="from_name" placeholder="Nome do Responsável" required={true} />
+              <ModernInput type="text" name="company" placeholder="Instituição / Empresa" required={true} />
+              <ModernInput type="tel" name="phone" placeholder="Telefone com DDD" required={true} />
+              <ModernInput type="email" name="email" placeholder="E-mail" required={true} />
+              
+              <div className="input-group">
+                <select name="interest" className="modern-input">
+                  <option value="">Selecione seu interesse</option>
+                  <option value="Educação">Educação</option>
+                  <option value="Cultura">Projetos Culturais</option>
+                  <option value="Regularização">Regularização</option>
+                  <option value="Outros">Outros</option>
+                </select>
+                <span className="input-highlight"></span>
+              </div>
+              
+              <ModernInput name="message" placeholder="Conte-nos sobre seu projeto" rows={4} required={true} />
+              
+              <button 
+                type="submit" 
+                className="btn btn-gradient btn-submit"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <div className="spinner"></div>
+                    Enviando...
+                  </>
+                ) : (
+                  'Enviar Solicitação'
+                )}
+              </button>
+
+              {success && (
+                <motion.div 
+                  className="success-message"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                >
+                  <FaCheck className="success-icon" />
+                  <div>
+                    <h4>Mensagem Enviada!</h4>
+                    <p>Em breve entraremos em contato.</p>
+                  </div>
+                </motion.div>
+              )}
+            </motion.form>
           </div>
         </div>
       </section>
